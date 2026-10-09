@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoNest</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #F8F6EF; color: #242824; }
+        .scrollbar-thin::-webkit-scrollbar { width: 8px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: #F8F6EF; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #A7B99E; border-radius: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #244C3A; }
+        
+        @media print {
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white !important; }
+          .no-print { display: none !important; }
+          #invoice-print { 
+            display: block !important; 
+            position: absolute; 
+            left: 0; top: 0; 
+            width: 100%; 
+            background: white;
+          }
+        }
+    </style>
+
+    <!-- Import Map for React & Lucide -->
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+        }
+    }
+    </script>
+
+    <!-- Babel for compiling JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- html2pdf for invoice generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useMemo, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+          ShoppingCart, Search, Menu, X, ChevronRight, Star, 
+          Leaf, Trash2, Plus, Minus, CreditCard, Truck, 
+          ShieldCheck, ArrowLeft, Download, Printer, CheckCircle2,
+          Filter, History, Info, Package
+        } from 'lucide-react';
+
+        // --- THEME & CONSTANTS ---
+        const CATEGORIES = [
+          "Bamboo Bottles",
+          "Reusable Bags",
+          "Plantable Stationery",
+          "Eco-Friendly Notebooks",
+          "Reusable Lunchboxes"
+        ];
+
+        // --- MOCK PRODUCT DATA ---
+        const PRODUCTS = [
+          {
+            id: 'b1', name: "Classic Bamboo Hydration Bottle", category: "Bamboo Bottles", price: 1299, originalPrice: 1499,
+            image: "https://images.unsplash.com/photo-1605273272990-2bf7f45700fc?auto=format&fit=crop&q=80&w=800",
+            shortDesc: "Double-walled insulation meets sustainable bamboo.",
+            desc: "Keep your drinks cold for 24 hours or hot for 12 with our premium bamboo-wrapped stainless steel bottle. Naturally anti-bacterial and completely BPA-free.",
+            materials: ["Sustainably sourced bamboo", "18/8 Stainless Steel", "Food-grade silicone seal"],
+            specs: "Capacity: 500ml | Weight: 280g", rating: 4.8, reviews: 124, stock: 45, isNew: true
+          },
+          {
+            id: 'b2', name: "Thermo-Steel Minimalist Flask", category: "Bamboo Bottles", price: 1599,
+            image: "https://images.unsplash.com/photo-1618365908648-723d5811d440?auto=format&fit=crop&q=80&w=800",
+            shortDesc: "Sleek, temperature-retaining travel flask.",
+            desc: "Designed for the modern commuter. This flask features a matte finish and a bamboo lid, ensuring your coffee stays piping hot during your morning transit.",
+            materials: ["Recycled Stainless Steel", "Bamboo Lid"], specs: "Capacity: 750ml", rating: 4.6, reviews: 89, stock: 20
+          },
+          {
+            id: 'b3', name: "Active Bamboo Sport Bottle", category: "Bamboo Bottles", price: 1099,
+            image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=800",
+            shortDesc: "Lightweight single-wall bottle for active days.",
+            desc: "The perfect companion for yoga or hiking. Lightweight and durable with a convenient carry loop.",
+            materials: ["Bamboo", "Silicone", "Aluminium inner"], specs: "Capacity: 600ml", rating: 4.5, reviews: 56, stock: 12
+          },
+          {
+            id: 'bag1', name: "Everyday Canvas Tote", category: "Reusable Bags", price: 499, originalPrice: 699,
+            image: "
